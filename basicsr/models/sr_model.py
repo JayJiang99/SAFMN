@@ -101,7 +101,10 @@ class SRModel(BaseModel):
 
     def optimize_parameters(self, current_iter):
         self.optimizer_g.zero_grad()
+        # print(self.lq.shape)
         self.output = self.net_g(self.lq)
+        # print('outputshape')
+        # print(self.output.shape)
 
         l_total = 0
         loss_dict = OrderedDict()

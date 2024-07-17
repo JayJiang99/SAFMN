@@ -147,7 +147,19 @@ class AttBlock(nn.Module):
         x = self.safm(self.norm1(x)) + x
         x = self.ccm(self.norm2(x)) + x
         return x
-        
+class ColumnUpscaler(nn.Module):
+    def __init__(self, dim, upscaling_factor):
+        super().__init__()
+        self.upscaling_factor = upscaling_factor
+        self.conv = nn.Conv2d(dim, dim * upscaling_factor, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        B, C, H, W = x.size()
+        x = self.conv(x)
+        x = x.view(B, C, self.upscaling_factor, H, W)
+        x = x.permute(0, 1, 3, 4, 2).contiguous()
+        x = x.view(B, C, H, W * self.upscaling_factor)
+        return x       
         
 @ARCH_REGISTRY.register()
 class SAFMN(nn.Module):
@@ -158,8 +170,8 @@ class SAFMN(nn.Module):
         self.feats = nn.Sequential(*[AttBlock(dim, ffn_scale) for _ in range(n_blocks)])
 
         self.to_img = nn.Sequential(
-            nn.Conv2d(dim, 3 * upscaling_factor**2, 3, 1, 1),
-            nn.PixelShuffle(upscaling_factor)
+            ColumnUpscaler(dim, upscaling_factor),
+            nn.Conv2d(dim, 3, 3, 1, 1)  # Final conv to get 3 channels
         )
 
     def forward(self, x):
