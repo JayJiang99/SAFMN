@@ -506,3 +506,6 @@ class GANFeatLoss(nn.Module):
                 unweighted_loss = self.loss_op(pred_fake[i][j], pred_real[i][j].detach())
                 loss += unweighted_loss / num_d
         return loss * self.loss_weight
+
+
+

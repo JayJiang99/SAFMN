@@ -159,6 +159,34 @@ def paired_oct_crop(img_gts, img_lqs, gt_patch_size, scale, gt_path=None):
 
     return img_gts, img_lqs
 
+def single_oct_crop(img_lqs, img_patch_size):
+    if not isinstance(img_lqs, list):
+        img_lqs = [img_lqs]
+
+    # determine input type: Numpy array or Tensor
+    input_type = 'Tensor' if torch.is_tensor(img_lqs[0]) else 'Numpy'
+
+    if input_type == 'Tensor':
+        h_lq, w_lq = img_lqs[0].size()[-2:]
+    else:
+        h_lq, w_lq = img_lqs[0].shape[0:2]
+
+
+    # randomly choose top and left coordinates for lq patch
+    top = random.randint(0, h_lq - img_patch_size)
+    left = random.randint(0, w_lq - img_patch_size)
+
+    # crop lq patch
+    if input_type == 'Tensor':
+        img_lqs = [v[:, :, top:top + img_patch_size, left:left + img_patch_size] for v in img_lqs]
+    else:
+        img_lqs = [v[top:top + img_patch_size, left:left + img_patch_size, ...] for v in img_lqs]
+
+    if len(img_lqs) == 1:
+        img_lqs = img_lqs[0]
+
+    return img_lqs
+
 def augment(imgs, hflip=True, rotation=True, flows=None, return_status=False):
     """Augment: horizontal flips OR rotate (0, 90, 180, 270 degrees).
 

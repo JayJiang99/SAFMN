@@ -165,8 +165,9 @@ def train_pipeline(root_path):
             # update learning rate
             model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
             # training
+            epoch_ratio = (epoch+1) / total_epochs
             model.feed_data(train_data)
-            model.optimize_parameters(current_iter)
+            model.optimize_parameters(current_iter,epoch_ratio)
             iter_timer.record()
             if current_iter == 1:
                 # reset start time in msg_logger for more accurate eta_time
